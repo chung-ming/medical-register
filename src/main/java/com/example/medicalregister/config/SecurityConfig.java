@@ -98,7 +98,7 @@ public class SecurityConfig {
      * @return The configured LogoutHandler.
      */
     private LogoutHandler logoutHandler() {
-        return (_, response, _) -> {
+        return (request, response, authentication) -> {
             try {
                 // Construct the 'returnTo' URL, which is where Auth0 will redirect the user
                 // back to after they have logged out from Auth0.
