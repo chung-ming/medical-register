@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: medical-register-deployment
+  labels:
+    app: medical-register
+spec:
+  replicas: 2 # Adjust replica count as needed
+  selector:
+    matchLabels:
+      app: medical-register
+  template:
+    metadata:
+      labels:
+        app: medical-register
+    spec:
+      containers:
+        - name: medical-register
+          image: medical-register-app:local # Use the locally built image
+          imagePullPolicy: IfNotPresent # Important for local images not in a registry
+          ports:
+            - containerPort: 8080
+          # Assuming Spring Boot Actuator is available for health checks
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 30 # Time to allow the application to start
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 60 # Time to allow the application to be fully up
+            periodSeconds: 15
+            failureThreshold: 3
+          env: [] # SPRING_PROFILES_ACTIVE is set to 'prod' in the Dockerfile; update as needed for different environments
+          resources:
+            # Define resource requests and limits as appropriate for your application
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"

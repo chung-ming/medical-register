@@ -1,0 +1,17 @@
+version: 0.0 # AWS CodeDeploy AppSpec version
+Resources:
+  - Name: MedicalRegisterDeploymentStaging
+    Type: Deployment # Kubernetes resource type
+    Properties:
+      Path: "deployment.yaml" # Path to the Kubernetes deployment manifest
+                              # Assumes deployment.yaml is in the same directory or bundle root
+  - Name: MedicalRegisterServiceStaging
+    Type: Service # Kubernetes resource type
+    Properties:
+      Path: "service.yaml"   # Path to the Kubernetes service manifest
+                              # Assumes service.yaml is in the same directory or bundle root
+# Hooks:
+#   # Optional: Define lifecycle event hooks for CodeDeploy
+#   AfterAllowTraffic:
+#     - Location: "scripts/verify_staging_endpoint.sh" # Example script
+#       Timeout: 180
