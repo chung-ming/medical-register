@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  lang="en"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Type"
+      content="application/xhtml+xml; charset=UTF-8"
+    />
+    <title th:text="${record.id == null ? 'Add New Record' : 'Edit Record'}">
+      Record Form
+    </title>
+    <link
+      rel="stylesheet"
+      th:href="@{/webjars/bootstrap/4.6.2/css/bootstrap.min.css}"
+      href="../../static/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1
+          th:text="${record.id == null ? 'Add New Medical Record' : 'Edit Medical Record'}"
+        >
+          Form Title
+        </h1>
+        <div>
+          <span th:if="${isAuthenticated}" class="mr-3"
+            >Logged in as: <strong th:text="${userName}">User</strong></span
+          >
+          <a th:href="@{/logout}" class="btn btn-sm btn-warning">Logout</a>
+        </div>
+      </div>
+
+      <form th:action="@{/records/save}" th:object="${record}" method="post">
+        <input type="hidden" th:field="*{id}" />
+
+        <div class="form-group">
+          <label for="name">Name:</label>
+          <input
+            type="text"
+            th:field="*{name}"
+            id="name"
+            class="form-control"
+          />
+          <small
+            class="form-text text-danger"
+            th:if="${#fields.hasErrors('name')}"
+            th:errors="*{name}"
+          ></small>
+        </div>
+
+        <div class="form-group">
+          <label for="age">Age:</label>
+          <input
+            type="number"
+            th:field="*{age}"
+            id="age"
+            class="form-control"
+          />
+          <small
+            class="form-text text-danger"
+            th:if="${#fields.hasErrors('age')}"
+            th:errors="*{age}"
+          ></small>
+        </div>
+
+        <div class="form-group">
+          <label for="medicalHistory">Medical History:</label>
+          <textarea
+            th:field="*{medicalHistory}"
+            id="medicalHistory"
+            class="form-control"
+            rows="5"
+          ></textarea>
+          <small
+            class="form-text text-danger"
+            th:if="${#fields.hasErrors('medicalHistory')}"
+            th:errors="*{medicalHistory}"
+          ></small>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a th:href="@{/records}" class="btn btn-secondary">Cancel</a>
+      </form>
+    </div>
+
+    <script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/4.6.2/js/bootstrap.min.js}"></script>
+  </body>
+</html>

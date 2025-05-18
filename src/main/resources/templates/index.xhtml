@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  lang="en"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Type"
+      content="application/xhtml+xml; charset=UTF-8"
+    />
+    <title>Medical Register Home</title>
+    <link
+      rel="stylesheet"
+      th:href="@{/webjars/bootstrap/4.6.2/css/bootstrap.min.css}"
+      href="../static/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <!-- Display logout messages -->
+      <div
+        th:if="${param.auth0logout}"
+        class="alert alert-info alert-dismissible fade show"
+        role="alert"
+      >
+        You have been successfully logged out.
+        <button
+          type="button"
+          class="close"
+          data-dismiss="alert"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <h1>Medical Register Home</h1>
+      <div th:if="${isAuthenticated}">
+        <p>Hello, <span th:text="${userName}">User</span>!</p>
+        <p>
+          <a th:href="@{/records}" class="btn btn-primary"
+            >View Medical Records</a
+          >
+        </p>
+        <p><a th:href="@{/logout}" class="btn btn-warning">Logout</a></p>
+      </div>
+      <div th:unless="${isAuthenticated}">
+        <p>
+          Please
+          <a th:href="@{/oauth2/authorization/auth0}" class="btn btn-success"
+            >Login with Auth0</a
+          >
+          to manage records.
+        </p>
+      </div>
+      <!-- Conditionally display H2 console link -->
+      <p th:if="${h2ConsoleEnabled}">
+        <a th:href="@{/h2-console}" target="_blank" class="btn btn-info mt-3"
+          >H2 Console (Dev)</a
+        >
+      </p>
+    </div>
+
+    <script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/4.6.2/js/bootstrap.min.js}"></script>
+  </body>
+</html>

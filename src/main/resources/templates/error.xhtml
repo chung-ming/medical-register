@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  lang="en"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Type"
+      content="application/xhtml+xml; charset=UTF-8"
+    />
+    <title>Error Occurred</title>
+    <link
+      rel="stylesheet"
+      th:href="@{/webjars/bootstrap/4.6.2/css/bootstrap.min.css}"
+      href="../static/css/bootstrap.min.css"
+    />
+    <!-- Use webjars for consistency -->
+  </head>
+  <body>
+    <div class="container mt-5">
+      <div class="jumbotron">
+        <h1 class="display-4">Oops! Something went wrong.</h1>
+        <p class="lead">We seem to have encountered an unexpected error.</p>
+        <hr class="my-4" />
+        <p>Here are some details (for development purposes):</p>
+        <ul>
+          <li th:if="${timestamp}">
+            <b>Timestamp:</b> <span th:text="${timestamp}">Timestamp</span>
+          </li>
+          <li th:if="${status}">
+            <b>Status Code:</b> <span th:text="${status}">Status</span>
+          </li>
+          <li th:if="${error}">
+            <b>Error:</b> <span th:text="${error}">Error</span>
+          </li>
+          <li th:if="${message}">
+            <b>Message:</b> <span th:text="${message}">Message</span>
+          </li>
+          <li th:if="${path}">
+            <b>Path:</b> <span th:text="${path}">Path</span>
+          </li>
+          <!-- For more detailed exception (dev mode only, be careful exposing in prod)
+            <li th:if="${trace}"><b>Trace:</b> <pre th:text="${trace}"></pre></li>
+            -->
+        </ul>
+        <p class="lead">
+          <a class="btn btn-primary btn-lg" th:href="@{/}" role="button"
+            >Go to Homepage</a
+          >
+        </p>
+      </div>
+    </div>
+
+    <script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/4.6.2/js/bootstrap.min.js}"></script>
+  </body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  lang="en"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Type"
+      content="application/xhtml+xml; charset=UTF-8"
+    />
+    <title>Medical Records</title>
+    <link
+      rel="stylesheet"
+      th:href="@{/webjars/bootstrap/4.6.2/css/bootstrap.min.css}"
+      href="../../static/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Medical Records</h1>
+        <div>
+          <span th:if="${isAuthenticated}" class="mr-3"
+            >Logged in as: <strong th:text="${userName}">User</strong></span
+          >
+          <a th:href="@{/logout}" class="btn btn-sm btn-warning">Logout</a>
+        </div>
+      </div>
+
+      <!-- Display error flash messages from redirects -->
+      <div
+        th:if="${errorMessage}"
+        class="alert alert-danger alert-dismissible fade show"
+        role="alert"
+      >
+        <span th:text="${errorMessage}">Error message here</span>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="alert"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- Display success flash messages from redirects -->
+      <div
+        th:if="${successMessage}"
+        class="alert alert-success alert-dismissible fade show"
+        role="alert"
+      >
+        <span th:text="${successMessage}">Success message here</span>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="alert"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <a th:href="@{/records/new}" class="btn btn-primary mb-3"
+        >Add New Record</a
+      >
+      <a th:href="@{/}" class="btn btn-secondary mb-3">Back to Home</a>
+
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Medical History</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="record : ${records}">
+            <td th:text="${record.id}">1</td>
+            <td th:text="${record.name}">Patient Name</td>
+            <td th:text="${record.age}">30</td>
+            <td th:text="${#strings.abbreviate(record.medicalHistory, 100)}">
+              History...
+            </td>
+            <td>
+              <a
+                th:href="@{/records/edit/{id}(id=${record.id})}"
+                class="btn btn-sm btn-info"
+                >Edit</a
+              >
+              <button
+                type="button"
+                class="btn btn-sm btn-danger delete-record-btn"
+                th:attr="data-record-id=${record.id}, data-record-name=${record.name}"
+                data-toggle="modal"
+                data-target="#deleteConfirmModal"
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(records)}">
+            <td colspan="5" class="text-center">No records found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div
+      class="modal fade"
+      id="deleteConfirmModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="deleteModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            Proceed to delete the record for
+            <strong><span id="recordNameToDelete"></span></strong>?
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <a href="#" id="confirmDeleteButton" class="btn btn-danger"
+              >Delete</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/4.6.2/js/bootstrap.min.js}"></script>
+    <script type="text/javascript">
+      //<![CDATA[
+      $(document).ready(function () {
+        $("#deleteConfirmModal").on("show.bs.modal", function (event) {
+          var button = $(event.relatedTarget); // Button that triggered the modal
+          var recordId = button.data("record-id");
+          var recordName = button.data("record-name");
+          var deleteUrl =
+            /*[[@{/records/delete/}]]*/ "/records/delete/" + recordId;
+
+          var modal = $(this);
+          modal
+            .find(".modal-body #recordNameToDelete")
+            .text(recordName || "this record");
+          modal.find("#confirmDeleteButton").attr("href", deleteUrl);
+        });
+      });
+      //]]>
+    </script>
+  </body>
+</html>

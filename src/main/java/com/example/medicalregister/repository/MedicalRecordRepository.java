@@ -1,0 +1,45 @@
+package com.example.medicalregister.repository;
+
+import com.example.medicalregister.model.MedicalRecord;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+/**
+ * Spring Data JPA repository for {@link MedicalRecord} entities. Provides CRUD
+ * operations and custom finder methods.
+ */
+@Repository
+public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Long> {
+    /**
+     * Finds all medical records owned by a specific user.
+     * 
+     * @param ownerId The identifier of the owner.
+     * @return A list of medical records.
+     */
+    List<MedicalRecord> findByOwnerId(String ownerId);
+
+    /**
+     * Finds a specific medical record by its ID, only if it's owned by the
+     * specified user.
+     * 
+     * @param id      The ID of the medical record.
+     * @param ownerId The identifier of the owner.
+     * @return An {@link Optional} containing the medical record if found and owned,
+     *         otherwise empty.
+     */
+    Optional<MedicalRecord> findByIdAndOwnerId(Long id, String ownerId);
+
+    /**
+     * Checks if a medical record exists with the given ID and is owned by the
+     * specified user.
+     * 
+     * @param id      The ID of the medical record.
+     * @param ownerId The identifier of the owner.
+     * @return True if such a record exists, false otherwise.
+     */
+    boolean existsByIdAndOwnerId(Long id, String ownerId);
+}
