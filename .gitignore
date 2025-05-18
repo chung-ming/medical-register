@@ -32,7 +32,7 @@ build/
 ### VS Code ###
 .vscode/
 
-### Local config ###
+### Local Config ###
 src/main/resources/application-local.properties
 
 ### MacOS ###
@@ -48,5 +48,8 @@ pom.xml.versionsBackup
 release.properties
 dependency-reduced-pom.xml
 
-### Log files ###
+### Log ###
 *.log
+
+### H2 Database ###
+*_medicaldb.*.db
