@@ -1,6 +1,6 @@
 # Stage 1: Build the application using Maven
-# Use an official Maven image with JDK 21 (as specified in pom.xml)
-FROM maven:3.9.6-eclipse-temurin-21 AS builder
+# Use an official Maven image with JDK 17 (as specified in pom.xml)
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 
 # Set the working directory in the container
 WORKDIR /app
@@ -17,8 +17,8 @@ COPY src ./src
 RUN mvn package -DskipTests
 
 # Stage 2: Create the runtime image
-# Use a slim JRE 21 image for a smaller final image size
-FROM eclipse-temurin:21-jre-jammy
+# Use a slim JRE 17 image for a smaller final image size
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
 # Copy the JAR file from the builder stage
