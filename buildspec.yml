@@ -15,7 +15,9 @@ phases:
       # Ensure the CodeBuild role has ECR permissions.
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 851725251295.dkr.ecr.us-east-1.amazonaws.com
       - REPOSITORY_URI=851725251295.dkr.ecr.us-east-1.amazonaws.com/medical-register
-      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7) # Use short commit hash as tag
+      - IMAGE_TAG=latest
+      # - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      # - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
       # For SonarQube, if you've stored the token in Secrets Manager:
       # - export SONAR_TOKEN=$(aws secretsmanager get-secret-value --secret-id your_sonar_token_secret_name --query SecretString --output text)
   build:
