@@ -1,0 +1,42 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto17 # Explicitly set Java 17, matching your pom.xml
+    commands:
+      - echo Entered the install phase...
+      # Add any other pre-requisite installations here if needed
+  pre_build:
+    commands:
+      - echo Entered the pre_build phase...
+      # Example: Login to Amazon ECR if you're pushing the image
+      # - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin YOUR_AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      # - REPOSITORY_URI=YOUR_AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/medical-register
+      # - IMAGE_TAG=${CODEBUILD_RESOLVED_SOURCE_VERSION:-latest}
+  build:
+    commands:
+      - echo Entered the build phase...
+      - echo Building the Spring Boot application using pom.xml...
+      - mvn clean package -DskipTests
+      - echo Building the Docker image using Dockerfile...
+      # If using ECR, use the REPOSITORY_URI and IMAGE_TAG from pre_build
+      - docker build -t medical-register:latest .
+      # - docker tag medical-register:latest $REPOSITORY_URI:$IMAGE_TAG
+      # - docker tag medical-register:latest $REPOSITORY_URI:latest
+  post_build:
+    commands:
+      - echo Entered the post_build phase...
+      - echo Build completed on `date`
+      # If using ECR, push the image
+      # - echo Pushing Docker image to ECR...
+      # - docker push $REPOSITORY_URI:$IMAGE_TAG
+      # - docker push $REPOSITORY_URI:latest
+      # - echo Writing image definitions file...
+      # - printf '[{"name":"medical-register-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+artifacts:
+  files:
+    - target/medical-register-*.jar # This is the JAR built by pom.xml
+    # If using ECR and deploying to ECS/EKS, include imagedefinitions.json
+    # - imagedefinitions.json
+  discard-paths: yes
