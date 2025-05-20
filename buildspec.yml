@@ -9,6 +9,14 @@ phases:
       # Add any other pre-requisite installations here if needed
   pre_build:
     commands:
+      - echo Logging in to Docker Hub...
+      # Retrieve Docker Hub credentials from AWS Secrets Manager
+      # Replace the secret-id with the ARN or name of your Docker Hub credentials secret
+      # Ensure your CodeBuild service role has 'secretsmanager:GetSecretValue' permission for this secret
+      - DOCKERHUB_CREDENTIALS=$(aws secretsmanager get-secret-value --secret-id "arn:aws:secretsmanager:us-east-1:851725251295:secret:dockerhub/medical-register/credentials-Mra96G" --query SecretString --output text --region us-east-1)
+      - DOCKERHUB_USERNAME=$(echo $DOCKERHUB_CREDENTIALS | jq -r .username)
+      - DOCKERHUB_PASSWORD=$(echo $DOCKERHUB_CREDENTIALS | jq -r .password)
+      - echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
       - echo Logging in to Amazon ECR...
       # Replace YOUR_AWS_ACCOUNT_ID and $AWS_REGION with your actual AWS Account ID and region
       # The CodeBuild environment variables $AWS_DEFAULT_REGION or $AWS_REGION can often be used for region.
