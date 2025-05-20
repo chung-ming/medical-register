@@ -15,26 +15,40 @@ phases:
       # Ensure the CodeBuild role has ECR permissions.
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 851725251295.dkr.ecr.us-east-1.amazonaws.com
       - REPOSITORY_URI=851725251295.dkr.ecr.us-east-1.amazonaws.com/medical-register
-      - IMAGE_TAG=latest
-      # - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      # - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
-      # For SonarQube, if you've stored the token in Secrets Manager:
-      # - export SONAR_TOKEN=$(aws secretsmanager get-secret-value --secret-id your_sonar_token_secret_name --query SecretString --output text)
+      # Use the commit hash for a unique image tag, and also tag as latest
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:-latest} # Fallback to latest if commit hash is not available
+
+      # SonarQube Setup - Uncomment and configure if you are using SonarQube
+      # Ensure your SonarQube server is accessible from CodeBuild (not localhost)
+      # - export SONAR_HOST_URL="YOUR_ACCESSIBLE_SONARQUBE_URL" # e.g., http://sonar.example.com:9000
+      # - export SONAR_TOKEN=$(aws secretsmanager get-secret-value --secret-id "arn:aws:secretsmanager:us-east-1:851725251295:secret:sonarqube/medical-register/token-JHP75e" --query SecretString --output text --region us-east-1)
+
   build:
     commands:
       - echo Entered the build phase...
       - echo Building the Spring Boot application, running tests, and generating coverage with pom.xml...
       # The 'verify' phase runs tests and JaCoCo.
       # Add sonar:sonar if SonarQube is configured and accessible. Ensure sonar.host.url is correct.
-      # - mvn clean verify sonar:sonar -Dsonar.login=$SONAR_TOKEN
+      # If using SonarQube, uncomment the sonar:sonar part and ensure SONAR_HOST_URL and SONAR_TOKEN are set
+      # - mvn clean verify sonar:sonar -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
       - mvn clean verify
+
+      - echo Building the Docker image using Dockerfile...
+      # Build the image
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+      # Also tag as 'latest' if IMAGE_TAG is not 'latest' (i.e., it's a commit hash)
+      - if [ "$IMAGE_TAG" != "latest" ]; then docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest; fi
+      - echo "--- Docker images after build and tag ---"
+      - docker images
+
   post_build:
     commands:
       - echo Entered the post_build phase...
       - echo Build completed on `date`
       - echo Pushing Docker images to ECR...
       - docker push $REPOSITORY_URI:latest
-      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - if [ "$IMAGE_TAG" != "latest" ]; then docker push $REPOSITORY_URI:$IMAGE_TAG; fi # Push specific tag if not latest
       - echo Writing image definitions file...
       # IMPORTANT: Replace 'medical-register-container' with the actual 'name' of the container
       # as defined in your ECS Task Definition.
