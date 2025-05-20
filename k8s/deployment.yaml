@@ -25,17 +25,35 @@ spec:
             httpGet:
               path: /actuator/health/readiness
               port: 8080
-            initialDelaySeconds: 30 # Time to allow the application to start
+            initialDelaySeconds: 60 # Give Spring Boot more time to start
             periodSeconds: 10
             failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
               port: 8080
-            initialDelaySeconds: 60 # Time to allow the application to be fully up
+            initialDelaySeconds: 90 # Give Spring Boot more time to be fully up
             periodSeconds: 15
             failureThreshold: 3
-          env: [] # SPRING_PROFILES_ACTIVE is set to 'prod' in the Dockerfile; update as needed for different environments
+          env:
+            # SPRING_PROFILES_ACTIVE is set to 'prod' in the Dockerfile
+            # Add environment variables required by application-prod.properties
+            # Replace with your actual Auth0 credentials and local access URL
+            - name: AUTH0_CLIENT_ID
+              value: "HT5TFnmaRbens0MEMRfkvGqPUrSU9ZLB"
+            - name: AUTH0_CLIENT_SECRET
+              value: "SWoPOTRrvfeShx_jA64ebIGTqkGPYx75wDWyfqqhj8U2lffPsYxnDFoDsTRc3EpL"
+            - name: AUTH0_ISSUER_URI
+              value: "https://dev-z1arx3mmb04n4k4f.us.auth0.com/"
+            # APP_BASE_URL should be the URL you use to access the app locally
+            # For LoadBalancer service type in Docker Desktop, this is often http://localhost:PORT
+            # We'll determine the port after applying the service, but start with a placeholder
+            - name: APP_BASE_URL
+              value: "http://localhost:80" # Placeholder - update after service is running
+            # Optional: If you need to override the H2 password default in prod properties
+            # - name: H2_DB_PASSWORD
+            #   value: "your_h2_password"
+
           resources:
             # Define resource requests and limits as appropriate for your application
             requests:
