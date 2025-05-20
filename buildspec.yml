@@ -9,34 +9,36 @@ phases:
       # Add any other pre-requisite installations here if needed
   pre_build:
     commands:
-      - echo Entered the pre_build phase...
-      # Example: Login to Amazon ECR if you're pushing the image
-      # - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin YOUR_AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-      # - REPOSITORY_URI=YOUR_AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/medical-register
-      # - IMAGE_TAG=${CODEBUILD_RESOLVED_SOURCE_VERSION:-latest}
+      - echo Logging in to Amazon ECR...
+      # Replace YOUR_AWS_ACCOUNT_ID and $AWS_REGION with your actual AWS Account ID and region
+      # The CodeBuild environment variables $AWS_DEFAULT_REGION or $AWS_REGION can often be used for region.
+      # Ensure the CodeBuild role has ECR permissions.
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 851725251295.dkr.ecr.us-east-1.amazonaws.com
+      - REPOSITORY_URI=851725251295.dkr.ecr.us-east-1.amazonaws.com/medical-register
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7) # Use short commit hash as tag
+      # For SonarQube, if you've stored the token in Secrets Manager:
+      # - export SONAR_TOKEN=$(aws secretsmanager get-secret-value --secret-id your_sonar_token_secret_name --query SecretString --output text)
   build:
     commands:
       - echo Entered the build phase...
-      - echo Building the Spring Boot application using pom.xml...
-      - mvn clean package -DskipTests
-      - echo Building the Docker image using Dockerfile...
-      # If using ECR, use the REPOSITORY_URI and IMAGE_TAG from pre_build
-      - docker build -t medical-register:latest .
-      # - docker tag medical-register:latest $REPOSITORY_URI:$IMAGE_TAG
-      # - docker tag medical-register:latest $REPOSITORY_URI:latest
+      - echo Building the Spring Boot application, running tests, and generating coverage with pom.xml...
+      # The 'verify' phase runs tests and JaCoCo.
+      # Add sonar:sonar if SonarQube is configured and accessible. Ensure sonar.host.url is correct.
+      # - mvn clean verify sonar:sonar -Dsonar.login=$SONAR_TOKEN
+      - mvn clean verify
   post_build:
     commands:
       - echo Entered the post_build phase...
       - echo Build completed on `date`
-      # If using ECR, push the image
-      # - echo Pushing Docker image to ECR...
-      # - docker push $REPOSITORY_URI:$IMAGE_TAG
-      # - docker push $REPOSITORY_URI:latest
-      # - echo Writing image definitions file...
-      # - printf '[{"name":"medical-register-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - echo Pushing Docker images to ECR...
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo Writing image definitions file...
+      # IMPORTANT: Replace 'medical-register-container' with the actual 'name' of the container
+      # as defined in your ECS Task Definition.
+      - printf '[{"name":"medical-register-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 artifacts:
   files:
     - target/medical-register-*.jar # This is the JAR built by pom.xml
-    # If using ECR and deploying to ECS/EKS, include imagedefinitions.json
-    # - imagedefinitions.json
+    - imagedefinitions.json # This file is crucial for ECS deployment
   discard-paths: yes
