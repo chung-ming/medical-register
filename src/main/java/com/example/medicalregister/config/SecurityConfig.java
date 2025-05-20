@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -62,6 +63,8 @@ public class SecurityConfig {
                             .requestMatchers("/", "/error", "/public/**", "/test/login",
                                     "/h2-console/**" // Allow access to H2 console (intended for development)
                     ).permitAll()
+                            // Allow unauthenticated access to the health endpoint
+                            .requestMatchers(EndpointRequest.to("health")).permitAll()
                             // Permit requests dispatched via FORWARD (e.g., to error pages) or ERROR.
                             // This is crucial for Spring Boot's default error handling to function
                             // correctly with security.
