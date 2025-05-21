@@ -78,7 +78,3 @@ When you are finished using the Medical Register application, it's important to 
 ## 7. Help & Support
 
 If you encounter any issues while using the Medical Register application or have any questions, please contact me at chungming_tsen[at]outlook[dot]com
-
----
-
-We hope this guide helps you use the Medical Register application effectively!

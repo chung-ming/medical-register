@@ -6,7 +6,7 @@
 2. Enhance your solution with logging or audit features (Optional).
 3. Enhance your solution with automated testing suite and test cases.
 4. Design and implement CICD for the application.
-5. Prepare a 1-page design brief on the above application with your assumptions, integration considerations and if any future considerations for the expansion of the application.
+5. Prepare a design brief document on the above application with your assumptions, integration considerations and if any future considerations for the expansion of the application.
 
 If there is any uncertainty or missing in detail, state your own assumptions to complete the above.
 
@@ -23,3 +23,11 @@ Expected:
 Architecture Diagram and Documentation
 
 **Submission: Provide a Git repository link for this assessment.**
+
+### Submission Details
+
+- GitHub Repo: [https://github.com/chung-ming/medical-register](https://github.com/chung-ming/medical-register)
+- Design Brief: [Section A - Design Brief.md](./docs/Section%20A%20-%20Design%20Brief.md)
+- Architecture Diagram and Documentation: 
+    - [Section B - Architecture Diagram and Documentation.md](./docs/Section%20B%20-%20Architecture%20Diagram%20and%20Documentation.md)
+    - [Architecture Diagram.png](./Architecture%20Diagram.png)
