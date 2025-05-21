@@ -27,7 +27,7 @@ Architecture Diagram and Documentation
 ### Submission Details
 
 - GitHub Repo: [https://github.com/chung-ming/medical-register](https://github.com/chung-ming/medical-register)
-- Design Brief: [Section A - Design Brief.md](./docs/Section%20A%20-%20Design%20Brief.md)
+- Design Brief: [Section A - Design Brief.md](./Section%20A%20-%20Design%20Brief.md)
 - Architecture Diagram and Documentation: 
-    - [Section B - Architecture Diagram and Documentation.md](./docs/Section%20B%20-%20Architecture%20Diagram%20and%20Documentation.md)
+    - [Section B - Architecture Diagram and Documentation.md](./Section%20B%20-%20Architecture%20Diagram%20and%20Documentation.md)
     - [Architecture Diagram.png](./Architecture%20Diagram.png)
