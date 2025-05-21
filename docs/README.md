@@ -1,5 +1,7 @@
 # Full Stack Java Developer Assessment
 
+---
+
 ## Section A
 
 1. Design and code a simple CRUD app for a medical register with fields such as Name, Age and Medical History, with assumption of LDAP integration of Auth0 using Spring Boot backend (version 3) and xhtml frontend.
@@ -9,6 +11,8 @@
 5. Prepare a design brief document on the above application with your assumptions, integration considerations and if any future considerations for the expansion of the application.
 
 If there is any uncertainty or missing in detail, state your own assumptions to complete the above.
+
+---
 
 ## Section B
 
@@ -24,9 +28,11 @@ Architecture Diagram and Documentation
 
 **Submission: Provide a Git repository link for this assessment.**
 
-### Submission Details
+---
 
-- GitHub Repo: [https://github.com/chung-ming/medical-register](https://github.com/chung-ming/medical-register)
+## Artifacts
+
+- User Guide: [User Guide.md](./Section%20C%20-%20User%20Guide.md)
 - Design Brief: [Section A - Design Brief.md](./Section%20A%20-%20Design%20Brief.md)
 - Architecture Diagram and Documentation: 
     - [Section B - Architecture Diagram and Documentation.md](./Section%20B%20-%20Architecture%20Diagram%20and%20Documentation.md)
