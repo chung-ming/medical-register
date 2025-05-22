@@ -42,11 +42,11 @@ class MedicalRecordRepositoryTest {
         // @DataJpaTest manages transactions and rolls back changes after each test.
 
         record1Owner1 = new MedicalRecord(null, "Patient A", 30, "History A", ownerId1, "Test User", "Test User", null,
-                null);
+                null, false);
         record2Owner1 = new MedicalRecord(null, "Patient B", 40, "History B", ownerId1, "Test User", "Test User", null,
-                null);
+                null, false);
         record1Owner2 = new MedicalRecord(null, "Patient C", 50, "History C", ownerId2, "Test User", "Test User", null,
-                null);
+                null, false);
 
         entityManager.persist(record1Owner1);
         entityManager.persist(record2Owner1);
@@ -119,7 +119,7 @@ class MedicalRecordRepositoryTest {
     void save_shouldPersistNewRecord() {
         MedicalRecord newRecord = new MedicalRecord(null, "New Patient", 25, "New History", "new-owner", "Test User",
                 "Test User",
-                null, null);
+                null, null, false);
         MedicalRecord savedRecord = medicalRecordRepository.save(newRecord);
 
         assertThat(savedRecord.getId()).isNotNull();

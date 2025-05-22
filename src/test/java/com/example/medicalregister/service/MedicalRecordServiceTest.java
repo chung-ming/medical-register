@@ -88,7 +88,7 @@ class MedicalRecordServiceTest {
     @DisplayName("findAllRecords should return records for authenticated user with sub")
     void findAllRecords_whenUserAuthenticatedWithSub_shouldReturnRecords() {
         mockAuthenticatedUserWithSub(USER_SUB_1);
-        MedicalRecord record = new MedicalRecord(1L, "Test", 30, "History", USER_SUB_1, null, null, null, null);
+        MedicalRecord record = new MedicalRecord(1L, "Test", 30, "History", USER_SUB_1, null, null, null, null, false);
         when(medicalRecordRepository.findByOwnerId(USER_SUB_1)).thenReturn(List.of(record));
 
         List<MedicalRecord> records = medicalRecordService.findAllRecords();
@@ -120,7 +120,7 @@ class MedicalRecordServiceTest {
     @DisplayName("findRecordById should return record if owned by user with sub")
     void findRecordById_whenOwnedByUserWithSub_shouldReturnRecord() {
         mockAuthenticatedUserWithSub(USER_SUB_1);
-        MedicalRecord record = new MedicalRecord(1L, "Test", 30, "History", USER_SUB_1, null, null, null, null);
+        MedicalRecord record = new MedicalRecord(1L, "Test", 30, "History", USER_SUB_1, null, null, null, null, false);
         when(medicalRecordRepository.findByIdAndOwnerId(1L, USER_SUB_1)).thenReturn(Optional.of(record));
 
         MedicalRecord foundRecord = medicalRecordService.findRecordById(1L);
@@ -154,8 +154,9 @@ class MedicalRecordServiceTest {
     @DisplayName("saveRecord should save new record and set ownerId for user with sub")
     void saveRecord_whenNewRecordAndUserWithSub_shouldSaveAndSetOwnerId() {
         mockAuthenticatedUserWithSub(USER_SUB_1);
-        MedicalRecord newRecord = new MedicalRecord(null, "New", 20, "New Hist", null, null, null, null, null);
-        MedicalRecord savedRecord = new MedicalRecord(1L, "New", 20, "New Hist", USER_SUB_1, null, null, null, null);
+        MedicalRecord newRecord = new MedicalRecord(null, "New", 20, "New Hist", null, null, null, null, null, false);
+        MedicalRecord savedRecord = new MedicalRecord(1L, "New", 20, "New Hist", USER_SUB_1, null, null, null, null,
+                false);
 
         when(medicalRecordRepository.save(any(MedicalRecord.class))).thenReturn(savedRecord);
 
@@ -172,7 +173,7 @@ class MedicalRecordServiceTest {
     void saveRecord_whenExistingRecordOwnedByUserWithSub_shouldUpdate() {
         mockAuthenticatedUserWithSub(USER_SUB_1);
         MedicalRecord updatedDetails = new MedicalRecord(1L, "Updated Name", 31, "Updated Hist", USER_SUB_1, null, null,
-                null, null);
+                null, null, false);
 
         when(medicalRecordRepository.existsByIdAndOwnerId(1L, USER_SUB_1)).thenReturn(true);
         when(medicalRecordRepository.save(any(MedicalRecord.class))).thenReturn(updatedDetails);
@@ -189,9 +190,10 @@ class MedicalRecordServiceTest {
     @DisplayName("saveRecord should throw AccessDeniedException if updating record not owned by user")
     void saveRecord_whenUpdatingRecordNotOwned_shouldThrowAccessDenied() {
         mockAuthenticatedUserWithSub(USER_SUB_1);
-        MedicalRecord recordToUpdate = new MedicalRecord(1L, "Name", 30, "History", USER_SUB_2, null, null, null, null); // Belongs
-                                                                                                                         // to
-                                                                                                                         // USER_SUB_2
+        MedicalRecord recordToUpdate = new MedicalRecord(1L, "Name", 30, "History", USER_SUB_2, null, null, null, null,
+                false); // Belongs
+        // to
+        // USER_SUB_2
 
         when(medicalRecordRepository.existsByIdAndOwnerId(1L, USER_SUB_1)).thenReturn(false); // User1 does not own
                                                                                               // record 1L
@@ -236,7 +238,7 @@ class MedicalRecordServiceTest {
 
         assertThatThrownBy(() -> medicalRecordService.deleteRecordById(1L))
                 .isInstanceOf(RecordNotFoundException.class)
-                .hasMessageContaining("Medical record not found with ID: 1");
+                .hasMessageContaining("Medical record not found or has already been deleted with ID: 1");
         verify(medicalRecordRepository).existsById(1L);
         verify(medicalRecordRepository, never()).existsByIdAndOwnerId(anyLong(), anyString());
         verify(medicalRecordRepository, never()).deleteById(anyLong());

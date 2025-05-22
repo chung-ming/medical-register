@@ -90,14 +90,14 @@ class MedicalRecordServiceIntegrationTest {
                 medicalRecordRepository
                                 .save(new MedicalRecord(null, "Record 1", 30, "History 1", USER_SUB_1, null, null,
                                                 null,
-                                                null));
+                                                null, false));
                 medicalRecordRepository
                                 .save(new MedicalRecord(null, "Record 2", 40, "History 2", USER_SUB_1, null, null,
                                                 null,
-                                                null));
+                                                null, false));
                 medicalRecordRepository.save(
                                 new MedicalRecord(null, "Other User Record", 50, "History 3", USER_SUB_2, null, null,
-                                                null, null));
+                                                null, null, false));
 
                 List<MedicalRecord> records = medicalRecordService.findAllRecords();
 
@@ -120,7 +120,7 @@ class MedicalRecordServiceIntegrationTest {
                 mockAuthenticatedUser(USER_SUB_1, USER_NAME_1);
                 MedicalRecord savedRecord = medicalRecordRepository
                                 .save(new MedicalRecord(null, "Owned Record", 30, "No history", USER_SUB_1, null, null,
-                                                null, null));
+                                                null, null, false));
 
                 MedicalRecord foundRecord = medicalRecordService.findRecordById(savedRecord.getId());
 
@@ -135,11 +135,11 @@ class MedicalRecordServiceIntegrationTest {
                 mockAuthenticatedUser(USER_SUB_1, USER_NAME_1); // User 1 is authenticated
                 MedicalRecord otherUserRecord = medicalRecordRepository
                                 .save(new MedicalRecord(null, "Other's Record", 30, "No history", USER_SUB_2, null,
-                                                null, null, null)); // Record
-                                                                    // owned
-                                                                    // by
-                                                                    // User
-                                                                    // 2
+                                                null, null, null, false)); // Record
+                                                                           // owned
+                                                                           // by
+                                                                           // User
+                                                                           // 2
 
                 assertThatThrownBy(() -> medicalRecordService.findRecordById(otherUserRecord.getId()))
                                 .isInstanceOf(RecordNotFoundException.class)
@@ -152,7 +152,7 @@ class MedicalRecordServiceIntegrationTest {
                 mockAuthenticatedUser(USER_SUB_1, USER_NAME_1);
                 MedicalRecord newRecord = new MedicalRecord(null, "New Patient", 25, "Initial checkup", null, null,
                                 null, null,
-                                null);
+                                null, false);
 
                 MedicalRecord savedRecord = medicalRecordService.saveRecord(newRecord);
 
@@ -171,11 +171,11 @@ class MedicalRecordServiceIntegrationTest {
                 mockAuthenticatedUser(USER_SUB_1, USER_NAME_1);
                 MedicalRecord originalRecord = medicalRecordRepository.save(
                                 new MedicalRecord(null, "Original Name", 30, "Original History", USER_SUB_1, null, null,
-                                                null, null));
+                                                null, null, false));
 
                 MedicalRecord recordToUpdate = new MedicalRecord(originalRecord.getId(), "Updated Name", 31,
                                 "Updated History",
-                                USER_SUB_1, null, null, null, null);
+                                USER_SUB_1, null, null, null, null, false);
                 MedicalRecord updatedRecord = medicalRecordService.saveRecord(recordToUpdate);
 
                 assertThat(updatedRecord.getName()).isEqualTo("Updated Name");
@@ -192,13 +192,13 @@ class MedicalRecordServiceIntegrationTest {
                 mockAuthenticatedUser(USER_SUB_1, USER_NAME_1); // User 1 is authenticated
                 MedicalRecord otherUserRecord = medicalRecordRepository.save(
                                 new MedicalRecord(null, "Unowned Record", 40, "Belongs to other", USER_SUB_2, null,
-                                                null, null, null)); // Owned
-                                                                    // by
-                                                                    // User
-                                                                    // 2
+                                                null, null, null, false)); // Owned
+                                                                           // by
+                                                                           // User
+                                                                           // 2
 
                 MedicalRecord recordToUpdate = new MedicalRecord(otherUserRecord.getId(), "Attempted Update", 41,
-                                "Attempted History", USER_SUB_1, null, null, null, null);
+                                "Attempted History", USER_SUB_1, null, null, null, null, false);
 
                 assertThatThrownBy(() -> medicalRecordService.saveRecord(recordToUpdate))
                                 .isInstanceOf(AccessDeniedException.class)
@@ -211,7 +211,7 @@ class MedicalRecordServiceIntegrationTest {
                 mockAuthenticatedUser(USER_SUB_1, USER_NAME_1);
                 MedicalRecord recordToDelete = medicalRecordRepository
                                 .save(new MedicalRecord(null, "To Be Deleted", 50, "Delete Me", USER_SUB_1, null, null,
-                                                null, null));
+                                                null, null, false));
                 Long recordId = recordToDelete.getId();
 
                 medicalRecordService.deleteRecordById(recordId);
@@ -225,10 +225,10 @@ class MedicalRecordServiceIntegrationTest {
                 mockAuthenticatedUser(USER_SUB_1, USER_NAME_1); // User 1 is authenticated
                 MedicalRecord otherUserRecord = medicalRecordRepository
                                 .save(new MedicalRecord(null, "Cannot Delete", 60, "Not Yours", USER_SUB_2, null, null,
-                                                null, null)); // Owned
-                                                              // by
-                                                              // User
-                                                              // 2
+                                                null, null, false)); // Owned
+                                                                     // by
+                                                                     // User
+                                                                     // 2
                 Long recordId = otherUserRecord.getId();
 
                 assertThatThrownBy(() -> medicalRecordService.deleteRecordById(recordId))
@@ -246,6 +246,7 @@ class MedicalRecordServiceIntegrationTest {
 
                 assertThatThrownBy(() -> medicalRecordService.deleteRecordById(nonExistentId))
                                 .isInstanceOf(RecordNotFoundException.class)
-                                .hasMessageContaining("Medical record not found with ID: " + nonExistentId);
+                                .hasMessageContaining("Medical record not found or has already been deleted with ID: "
+                                                + nonExistentId);
         }
 }

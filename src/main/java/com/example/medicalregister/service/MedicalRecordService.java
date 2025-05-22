@@ -129,10 +129,13 @@ public class MedicalRecordService {
             logger.warn("Attempt to delete record {} by unauthenticated user or user without 'sub' claim.", id);
             throw new AccessDeniedException("User must be authenticated with a 'sub' claim to delete records.");
         }
-        // First, check if the record exists at all using JpaRepository's existsById
+        // First, check if the record exists and is not already soft-deleted.
+        // medicalRecordRepository.existsById(id) will respect the
+        // @Where(clause="deleted = false")
         if (!medicalRecordRepository.existsById(id)) {
-            logger.warn("Attempt to delete non-existent record with ID: {} by user {}", id, ownerId);
-            throw new RecordNotFoundException("Medical record not found with ID: " + id);
+            logger.warn("Attempt by user {} to delete record ID {}: Record not found or already marked as deleted.",
+                    ownerId, id);
+            throw new RecordNotFoundException("Medical record not found or has already been deleted with ID: " + id);
         }
 
         // Then, check if the record belongs to the current user
@@ -142,7 +145,7 @@ public class MedicalRecordService {
         }
 
         medicalRecordRepository.deleteById(id);
-        logger.info("User {} successfully deleted medical record with ID: {}", ownerId, id);
+        logger.info("User {} successfully soft-deleted medical record with ID: {}", ownerId, id);
     }
 
     /**
