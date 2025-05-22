@@ -7,6 +7,9 @@ import jakarta.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -21,7 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 
 /**
  * RESTful API controller for managing medical records. Handles CRUD operations
@@ -49,15 +51,19 @@ public class MedicalRecordApiController {
     /**
      * Retrieves all medical records for the authenticated user.
      * GET /api/v1/records
+     * Supports pagination and sorting via Pageable (e.g.,
+     * ?page=0&size=10&sort=name,asc)
      *
      * @param principal The authenticated OAuth2User.
-     * @return A list of medical records.
+     * @param pageable  Pagination and sorting information.
+     * @return A {@link Page} of medical records.
      */
     @GetMapping
-    public ResponseEntity<List<MedicalRecord>> listRecords(@AuthenticationPrincipal OAuth2User principal) {
+    public ResponseEntity<Page<MedicalRecord>> listRecords(@AuthenticationPrincipal OAuth2User principal,
+            @PageableDefault(size = 3) Pageable pageable) {
         String userName = getUserName(principal);
-        logger.info("API: User {} attempting to list records.", userName);
-        List<MedicalRecord> records = recordService.findAllRecords(); // Assumes service handles auth
+        logger.info("API: User {} attempting to list records with pageable: {}.", userName, pageable);
+        Page<MedicalRecord> records = recordService.findAllRecords(pageable);
         return ResponseEntity.ok(records);
     }
 

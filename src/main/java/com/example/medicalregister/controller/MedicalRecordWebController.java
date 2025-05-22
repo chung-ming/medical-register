@@ -6,8 +6,15 @@ import com.example.medicalregister.service.MedicalRecordService;
 
 import jakarta.validation.Valid;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -67,16 +74,47 @@ public class MedicalRecordWebController {
      * Displays a list of medical records for the authenticated user.
      * 
      * @param model              The Spring MVC model.
+     * @param pageable           Pagination and sorting information from request
+     *                           parameters.
      * @param redirectAttributes Used for flash messages on redirect.
      * @return The view name for listing records, or redirects to home on access
      *         denial.
      */
     @GetMapping
-    public String listRecords(Model model, RedirectAttributes redirectAttributes) {
+    public String listRecords(Model model, @PageableDefault(size = 3) Pageable pageable,
+            RedirectAttributes redirectAttributes) {
         String userName = (String) model.getAttribute("userName");
         try {
-            logger.info("User {} attempting to list records.", userName);
-            model.addAttribute("records", recordService.findAllRecords());
+            logger.info("User {} attempting to list records with pageable: {}.", userName, pageable);
+            Page<MedicalRecord> recordPage = recordService.findAllRecords(pageable);
+            model.addAttribute("recordPage", recordPage);
+
+            // Prepare sort parameters for pagination links
+            Sort sort = recordPage.getPageable().getSort();
+            if (sort.isSorted()) {
+                List<String> sortParams = sort.stream()
+                        .map(order -> order.getProperty() + "," + order.getDirection().toString().toLowerCase())
+                        .collect(Collectors.toList());
+                model.addAttribute("sortParamsForPagination", sortParams);
+            } else {
+                model.addAttribute("sortParamsForPagination", null);
+            }
+
+            // Pagination window logic
+            int totalPages = recordPage.getTotalPages();
+            model.addAttribute("totalPages", totalPages); // Make totalPages directly available if needed elsewhere
+            if (totalPages > 0) {
+                int currentPage = recordPage.getNumber(); // 0-indexed
+                int pageWindowSize = 5;
+
+                int calculatedStartPage = Math.max(0, currentPage - pageWindowSize / 2);
+                int calculatedEndPage = Math.min(totalPages - 1, calculatedStartPage + pageWindowSize - 1);
+                // Re-adjust startPage if endPage was capped and window is smaller than desired
+                calculatedStartPage = Math.max(0, calculatedEndPage - pageWindowSize + 1);
+
+                model.addAttribute("startPage", calculatedStartPage);
+                model.addAttribute("endPage", calculatedEndPage);
+            }
         } catch (AccessDeniedException e) {
             logger.warn("Access denied for user {} while listing records: {}", userName, e.getMessage());
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());

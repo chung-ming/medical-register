@@ -15,6 +15,9 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -88,21 +91,24 @@ class MedicalRecordServiceTest {
     @DisplayName("findAllRecords should return records for authenticated user with sub")
     void findAllRecords_whenUserAuthenticatedWithSub_shouldReturnRecords() {
         mockAuthenticatedUserWithSub(USER_SUB_1);
-        MedicalRecord record = new MedicalRecord(1L, "Test", 30, "History", USER_SUB_1, null, null, null, null, false);
-        when(medicalRecordRepository.findByOwnerId(USER_SUB_1)).thenReturn(List.of(record));
+        List<MedicalRecord> recordList = List
+                .of(new MedicalRecord(1L, "Test", 30, "History", USER_SUB_1, null, null, null, null, false));
+        Page<MedicalRecord> recordPage = new PageImpl<>(recordList, Pageable.unpaged(), recordList.size());
 
-        List<MedicalRecord> records = medicalRecordService.findAllRecords();
+        when(medicalRecordRepository.findByOwnerId(eq(USER_SUB_1), any(Pageable.class))).thenReturn(recordPage);
 
-        assertThat(records).hasSize(1);
-        assertThat(records.get(0).getOwnerId()).isEqualTo(USER_SUB_1);
-        verify(medicalRecordRepository).findByOwnerId(USER_SUB_1);
+        Page<MedicalRecord> resultPage = medicalRecordService.findAllRecords(Pageable.unpaged());
+
+        assertThat(resultPage.getContent()).hasSize(1);
+        assertThat(resultPage.getContent().get(0).getOwnerId()).isEqualTo(USER_SUB_1);
+        verify(medicalRecordRepository).findByOwnerId(eq(USER_SUB_1), any(Pageable.class));
     }
 
     @Test
     @DisplayName("findAllRecords should throw AccessDeniedException if user has no sub")
     void findAllRecords_whenUserHasNoSub_shouldThrowAccessDenied() {
         mockAuthenticatedUserWithoutSub();
-        assertThatThrownBy(() -> medicalRecordService.findAllRecords())
+        assertThatThrownBy(() -> medicalRecordService.findAllRecords(Pageable.unpaged()))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessageContaining("User must be authenticated with a 'sub' claim");
     }
@@ -111,7 +117,7 @@ class MedicalRecordServiceTest {
     @DisplayName("findAllRecords should throw AccessDeniedException if unauthenticated")
     void findAllRecords_whenUnauthenticated_shouldThrowAccessDenied() {
         mockUnauthenticated();
-        assertThatThrownBy(() -> medicalRecordService.findAllRecords())
+        assertThatThrownBy(() -> medicalRecordService.findAllRecords(Pageable.unpaged()))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessageContaining("User must be authenticated with a 'sub' claim");
     }

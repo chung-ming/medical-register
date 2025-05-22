@@ -68,18 +68,62 @@
       >
       <a th:href="@{/}" class="btn btn-secondary mb-3">Back to Home</a>
 
+      <!-- sortParamsForPagination is now provided by the controller -->
+
       <table class="table table-striped">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Age</th>
+            <th scope="col">
+              <a
+                th:with="prop = 'id',
+                           currentOrder = ${recordPage.pageable.sort.getOrderFor(prop)},
+                           nextDir = ${(currentOrder != null && currentOrder.isAscending()) ? 'desc' : 'asc'},
+                           sortParam = ${prop + ',' + nextDir}"
+                th:href="@{/records(page=0, size=${recordPage.size}, sort=${sortParam})}"
+              >
+                ID
+                <span th:if="${currentOrder != null}" th:remove="tag">
+                  <span th:if="${currentOrder.isAscending()}">▲</span>
+                  <span th:if="${currentOrder.isDescending()}">▼</span>
+                </span>
+              </a>
+            </th>
+            <th scope="col">
+              <a
+                th:with="prop = 'name',
+                           currentOrder = ${recordPage.pageable.sort.getOrderFor(prop)},
+                           nextDir = ${(currentOrder != null && currentOrder.isAscending()) ? 'desc' : 'asc'},
+                           sortParam = ${prop + ',' + nextDir}"
+                th:href="@{/records(page=0, size=${recordPage.size}, sort=${sortParam})}"
+              >
+                Name
+                <span th:if="${currentOrder != null}" th:remove="tag">
+                  <span th:if="${currentOrder.isAscending()}">▲</span>
+                  <span th:if="${currentOrder.isDescending()}">▼</span>
+                </span>
+              </a>
+            </th>
+            <th scope="col">
+              <a
+                th:with="prop = 'age',
+                           currentOrder = ${recordPage.pageable.sort.getOrderFor(prop)},
+                           nextDir = ${(currentOrder != null && currentOrder.isAscending()) ? 'desc' : 'asc'},
+                           sortParam = ${prop + ',' + nextDir}"
+                th:href="@{/records(page=0, size=${recordPage.size}, sort=${sortParam})}"
+              >
+                Age
+                <span th:if="${currentOrder != null}" th:remove="tag">
+                  <span th:if="${currentOrder.isAscending()}">▲</span>
+                  <span th:if="${currentOrder.isDescending()}">▼</span>
+                </span>
+              </a>
+            </th>
             <th>Medical History</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr th:each="record : ${records}">
+          <tr th:each="record : ${recordPage.content}">
             <td th:text="${record.id}">1</td>
             <td th:text="${record.name}">Patient Name</td>
             <td th:text="${record.age}">30</td>
@@ -103,11 +147,80 @@
               </button>
             </td>
           </tr>
-          <tr th:if="${#lists.isEmpty(records)}">
+          <tr th:if="${recordPage.empty}">
             <td colspan="5" class="text-center">No records found.</td>
           </tr>
         </tbody>
       </table>
+
+      <!-- Pagination Controls -->
+      <nav th:if="${recordPage.totalPages > 0}" aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+          <!-- First Page Link -->
+          <li
+            class="page-item"
+            th:classappend="${recordPage.first} ? 'disabled'"
+          >
+            <a
+              class="page-link"
+              th:href="${recordPage.first} ? '#' : @{/records(page=0, size=${recordPage.size}, sort=${sortParamsForPagination})}"
+              >First</a
+            >
+          </li>
+          <!-- Previous Page Link -->
+          <li
+            class="page-item"
+            th:classappend="${recordPage.first} ? 'disabled'"
+          >
+            <a
+              class="page-link"
+              th:href="${recordPage.first} ? '#' : @{/records(page=${recordPage.number-1}, size=${recordPage.size}, sort=${sortParamsForPagination})}"
+              >Previous</a
+            >
+          </li>
+
+          <!-- Page Numbers (Windowed) -->
+          <!-- startPage and endPage are now provided by the controller -->
+          <!-- We still need a condition to show page numbers only if there are pages -->
+          <th:block th:if="${recordPage.totalPages > 0}">
+            <li
+              class="page-item"
+              th:each="pageNum : ${#numbers.sequence(startPage, endPage)}"
+              th:classappend="${pageNum == recordPage.number} ? 'active'"
+              th:aria-current="${pageNum == recordPage.number} ? 'page' : null"
+            >
+              <a
+                class="page-link"
+                th:href="@{/records(page=${pageNum}, size=${recordPage.size}, sort=${sortParamsForPagination})}"
+                th:text="${pageNum + 1}"
+              ></a>
+            </li>
+          </th:block>
+
+          <!-- Next Page Link -->
+          <li
+            class="page-item"
+            th:classappend="${recordPage.last} ? 'disabled'"
+          >
+            <a
+              class="page-link"
+              th:href="${recordPage.last} ? '#' : @{/records(page=${recordPage.number+1}, size=${recordPage.size}, sort=${sortParamsForPagination})}"
+              >Next</a
+            >
+          </li>
+          <!-- Last Page Link -->
+          <li
+            class="page-item"
+            th:classappend="${recordPage.last} ? 'disabled'"
+          >
+            <a
+              class="page-link"
+              th:href="${recordPage.last} ? '#' : @{/records(page=${recordPage.totalPages-1}, size=${recordPage.size}, sort=${sortParamsForPagination})}"
+              >Last</a
+            >
+          </li>
+        </ul>
+      </nav>
     </div>
 
     <!-- Delete Confirmation Modal -->

@@ -4,10 +4,10 @@ import com.example.medicalregister.exception.RecordNotFoundException;
 import com.example.medicalregister.model.MedicalRecord;
 import com.example.medicalregister.repository.MedicalRecordRepository;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -37,20 +37,22 @@ public class MedicalRecordService {
 
     /**
      * Retrieves all medical records for the currently authenticated user.
-     * 
-     * @return A list of {@link MedicalRecord}s.
+     *
+     * @param pageable Pagination and sorting information.
+     * @return A {@link Page} of {@link MedicalRecord}s.
      * @throws AccessDeniedException if the user is not authenticated or lacks a
      *                               'sub' claim.
      */
     @Transactional(readOnly = true)
-    public List<MedicalRecord> findAllRecords() {
+    public Page<MedicalRecord> findAllRecords(Pageable pageable) {
         String ownerId = getCurrentUserSub();
         if (ownerId == null) {
             logger.warn("Attempt to find all records without authenticated user or user without 'sub' claim.");
             throw new AccessDeniedException("User must be authenticated with a 'sub' claim to view records.");
         }
-        List<MedicalRecord> records = medicalRecordRepository.findByOwnerId(ownerId);
-        logger.info("User {} retrieved {} medical records.", ownerId, records.size());
+        Page<MedicalRecord> records = medicalRecordRepository.findByOwnerId(ownerId, pageable);
+        logger.info("User {} retrieved page {} of {} records (total {} records).", ownerId, records.getNumber(),
+                records.getNumberOfElements(), records.getTotalElements());
         return records;
     }
 

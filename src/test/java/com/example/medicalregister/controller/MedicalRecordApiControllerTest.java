@@ -7,6 +7,7 @@ import com.example.medicalregister.model.MedicalRecord;
 import com.example.medicalregister.service.MedicalRecordService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,6 +18,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,6 +28,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -32,10 +37,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -102,14 +107,62 @@ class MedicalRecordApiControllerTest {
 
         @Test
         @DisplayName("GET /api/v1/records - Authenticated - Should return list of records")
-        void listRecords_authenticated_shouldReturnListOfRecords() throws Exception {
-                when(medicalRecordService.findAllRecords()).thenReturn(List.of(sampleRecord1, sampleRecord2));
+        void listRecords_authenticated_shouldReturnPageOfRecords() throws Exception {
+                List<MedicalRecord> recordList = List.of(sampleRecord1, sampleRecord2);
+                Page<MedicalRecord> recordPage = new PageImpl<>(recordList, PageRequest.of(0, 20), recordList.size());
+                when(medicalRecordService.findAllRecords(any(Pageable.class))).thenReturn(recordPage);
 
                 mockMvc.perform(get("/api/v1/records").with(oauth2Login().oauth2User(testUser)))
                                 .andExpect(status().isOk())
                                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                                .andExpect(jsonPath("$", hasSize(2)))
-                                .andExpect(jsonPath("$[0].name", is(sampleRecord1.getName())));
+                                .andExpect(jsonPath("$.content", hasSize(2)))
+                                .andExpect(jsonPath("$.content[0].name", is(sampleRecord1.getName())))
+                                .andExpect(jsonPath("$.totalPages", is(1)))
+                                .andExpect(jsonPath("$.totalElements", is(2)))
+                                .andExpect(jsonPath("$.pageable.pageNumber", is(0)));
+        }
+
+        @Test
+        @DisplayName("GET /api/v1/records - Authenticated with pagination params - Should return paginated results")
+        void listRecords_withPaginationParams_shouldReturnPaginatedResults() throws Exception {
+                List<MedicalRecord> recordList = List.of(sampleRecord1); // Only one record for this page
+                Page<MedicalRecord> recordPage = new PageImpl<>(recordList, PageRequest.of(1, 1), 2); // Page 1, size 1,
+                                                                                                      // total 2
+
+                // Capture the Pageable argument
+                when(medicalRecordService.findAllRecords(any(Pageable.class))).thenReturn(recordPage);
+
+                mockMvc.perform(get("/api/v1/records")
+                                .param("page", "1")
+                                .param("size", "1")
+                                .with(oauth2Login().oauth2User(testUser)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.content", hasSize(1)))
+                                .andExpect(jsonPath("$.content[0].name", is(sampleRecord1.getName())))
+                                .andExpect(jsonPath("$.totalPages", is(2))) // Total 2 pages if totalElements is 2 and
+                                                                            // size is 1
+                                .andExpect(jsonPath("$.totalElements", is(2)))
+                                .andExpect(jsonPath("$.pageable.pageNumber", is(1)))
+                                .andExpect(jsonPath("$.pageable.pageSize", is(1)));
+
+                verify(medicalRecordService).findAllRecords(eq(PageRequest.of(1, 1)));
+        }
+
+        @Test
+        @DisplayName("GET /api/v1/records - Authenticated with sort param - Should return sorted results")
+        void listRecords_withSortParam_shouldReturnSortedResults() throws Exception {
+                // Assume sampleRecord2 should come before sampleRecord1 when sorted by name
+                // descending
+                List<MedicalRecord> sortedList = List.of(sampleRecord2, sampleRecord1);
+                Page<MedicalRecord> recordPage = new PageImpl<>(sortedList, PageRequest.of(0, 20), sortedList.size());
+                when(medicalRecordService.findAllRecords(any(Pageable.class))).thenReturn(recordPage);
+
+                mockMvc.perform(get("/api/v1/records")
+                                .param("sort", "name,desc")
+                                .with(oauth2Login().oauth2User(testUser)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.content[0].name", is(sampleRecord2.getName())))
+                                .andExpect(jsonPath("$.content[1].name", is(sampleRecord1.getName())));
         }
 
         @Test

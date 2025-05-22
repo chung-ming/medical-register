@@ -11,12 +11,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -98,9 +98,9 @@ class MedicalRecordWebControllerIntegrationTest {
                 .andExpect(flash().attribute("successMessage", "Record successfully created."));
 
         // Verify record in DB
-        List<MedicalRecord> recordsInDb = medicalRecordRepository.findByOwnerId(TEST_USER_SUB);
+        Page<MedicalRecord> recordsInDb = medicalRecordRepository.findByOwnerId(TEST_USER_SUB, Pageable.unpaged());
         assertThat(recordsInDb).hasSize(1);
-        MedicalRecord savedRecord = recordsInDb.get(0);
+        MedicalRecord savedRecord = recordsInDb.getContent().get(0);
         assertThat(savedRecord.getName()).isEqualTo(patientName);
         assertThat(savedRecord.getAge()).isEqualTo(patientAge);
         assertThat(savedRecord.getMedicalHistory()).isEqualTo(medicalHistory);
@@ -111,11 +111,11 @@ class MedicalRecordWebControllerIntegrationTest {
         mockMvc.perform(get("/records").with(oauth2Login().oauth2User(testUser)))
                 .andExpect(status().isOk())
                 .andExpect(view().name("records/list-records"))
-                .andExpect(model().attribute("records", hasSize(1)))
-                .andExpect(model().attribute("records", contains(
+                .andExpect(model().attribute("recordPage", hasProperty("content", hasSize(1))))
+                .andExpect(model().attribute("recordPage", hasProperty("content", contains(
                         allOf(
                                 hasProperty("id", is(savedRecordId)),
-                                hasProperty("name", is(patientName))))));
+                                hasProperty("name", is(patientName)))))));
 
         // 4. Show Edit Form (Authenticated)
         mockMvc.perform(get("/records/edit/" + savedRecordId).with(oauth2Login().oauth2User(testUser)))
@@ -149,7 +149,7 @@ class MedicalRecordWebControllerIntegrationTest {
 
         // Verify deletion from DB
         assertThat(medicalRecordRepository.findById(savedRecordId)).isNotPresent();
-        assertThat(medicalRecordRepository.findByOwnerId(TEST_USER_SUB)).isEmpty();
+        assertThat(medicalRecordRepository.findByOwnerId(TEST_USER_SUB, Pageable.unpaged())).isEmpty();
     }
 
     @Test
@@ -169,6 +169,6 @@ class MedicalRecordWebControllerIntegrationTest {
                                                                                                  // 'age'
 
         // Verify no record was saved
-        assertThat(medicalRecordRepository.findByOwnerId(TEST_USER_SUB)).isEmpty();
+        assertThat(medicalRecordRepository.findByOwnerId(TEST_USER_SUB, Pageable.unpaged())).isEmpty();
     }
 }

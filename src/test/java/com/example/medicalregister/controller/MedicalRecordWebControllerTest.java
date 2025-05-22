@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -18,7 +21,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
@@ -44,24 +49,29 @@ class MedicalRecordWebControllerTest {
     private MedicalRecordService recordService;
 
     @Test
-    @DisplayName("GET /records should return list-records view for authenticated user")
+    @DisplayName("GET /records should return list-records view with a page of records for authenticated user")
     void listRecords_authenticated_shouldReturnViewAndRecords() throws Exception {
         // Arrange
         List<MedicalRecord> mockRecords = Collections.singletonList(new MedicalRecord());
-        when(recordService.findAllRecords()).thenReturn(mockRecords);
+        Page<MedicalRecord> mockRecordPage = new PageImpl<>(mockRecords, PageRequest.of(0, 20), mockRecords.size());
+
+        when(recordService.findAllRecords(any(PageRequest.class))).thenReturn(mockRecordPage);
 
         var mockPrincipal = SecurityTestUtils.createOAuth2User(
                 Map.of("name", "Test User", "email", "test@example.com"), // Attributes
                 "name");
 
         // Act & Assert
-        mockMvc.perform(get("/records").with(oauth2Login().oauth2User(mockPrincipal)))
+        mockMvc.perform(get("/records")
+                .param("page", "0")
+                .param("size", "20")
+                .with(oauth2Login().oauth2User(mockPrincipal)))
                 .andExpect(status().isOk())
                 .andExpect(view().name("records/list-records"))
-                .andExpect(model().attributeExists("records"))
-                .andExpect(model().attribute("records", mockRecords));
+                .andExpect(model().attributeExists("recordPage"))
+                .andExpect(model().attribute("recordPage", hasProperty("content", is(mockRecords))));
 
-        verify(recordService).findAllRecords();
+        verify(recordService).findAllRecords(PageRequest.of(0, 20));
     }
 
     @Test
@@ -71,8 +81,8 @@ class MedicalRecordWebControllerTest {
         mockMvc.perform(get("/records"))
                 .andExpect(status().isFound())
                 // Expect redirect to the OAuth2 authorization endpoint
-                .andExpect(redirectedUrlPattern("**/oauth2/authorization/*"));
-        verify(recordService, never()).findAllRecords();
+                .andExpect(redirectedUrlPattern("**/oauth2/authorization/*")); // Default behavior for unauthenticated
+        verify(recordService, never()).findAllRecords(any());
     }
 
     @Test

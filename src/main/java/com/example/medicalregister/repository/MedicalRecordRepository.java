@@ -2,9 +2,10 @@ package com.example.medicalregister.repository;
 
 import com.example.medicalregister.model.MedicalRecord;
 
-import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,12 +16,13 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Long> {
     /**
-     * Finds all medical records owned by a specific user.
+     * Finds a page of medical records owned by a specific user.
      * 
-     * @param ownerId The identifier of the owner.
-     * @return A list of medical records.
+     * @param ownerId  The identifier of the owner.
+     * @param pageable Pagination and sorting information.
+     * @return A {@link Page} of medical records.
      */
-    List<MedicalRecord> findByOwnerId(String ownerId);
+    Page<MedicalRecord> findByOwnerId(String ownerId, Pageable pageable);
 
     /**
      * Finds a specific medical record by its ID, only if it's owned by the
