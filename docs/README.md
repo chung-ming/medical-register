@@ -32,8 +32,10 @@ Architecture Diagram and Documentation
 
 ## Artifacts
 
-- User Guide: [User Guide.md](./Section%20C%20-%20User%20Guide.md)
+- User Guide: [User Guide.md](./User%20Guide.md)
+- Developer Guide: [Developer Guide.md](./Developer%20Guide.md)
 - Design Brief: [Section A - Design Brief.md](./Section%20A%20-%20Design%20Brief.md)
 - Architecture Diagram and Documentation: 
     - [Section B - Architecture Diagram and Documentation.md](./Section%20B%20-%20Architecture%20Diagram%20and%20Documentation.md)
     - [Architecture Diagram.png](./Architecture%20Diagram.png)
+- SonarQube Report: [SonarQube_2.png](../img/SonarQube_2.png)

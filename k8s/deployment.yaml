@@ -38,18 +38,25 @@ spec:
           env:
             # SPRING_PROFILES_ACTIVE is set to 'prod' in the Dockerfile
             # Add environment variables required by application-prod.properties
-            # Replace with your actual Auth0 credentials and local access URL
             - name: AUTH0_CLIENT_ID
-              value: "HT5TFnmaRbens0MEMRfkvGqPUrSU9ZLB"
+              valueFrom:
+                secretKeyRef:
+                  name: auth0-credentials
+                  key: AUTH0_CLIENT_ID
             - name: AUTH0_CLIENT_SECRET
-              value: "SWoPOTRrvfeShx_jA64ebIGTqkGPYx75wDWyfqqhj8U2lffPsYxnDFoDsTRc3EpL"
+              valueFrom:
+                secretKeyRef:
+                  name: auth0-credentials
+                  key: AUTH0_CLIENT_SECRET
             - name: AUTH0_ISSUER_URI
-              value: "https://dev-z1arx3mmb04n4k4f.us.auth0.com/"
+              valueFrom:
+                secretKeyRef:
+                  name: auth0-credentials
+                  key: AUTH0_ISSUER_URI
             # APP_BASE_URL should be the URL you use to access the app locally
             # For LoadBalancer service type in Docker Desktop, this is often http://localhost:PORT
-            # We'll determine the port after applying the service, but start with a placeholder
             - name: APP_BASE_URL
-              value: "http://localhost:80" # Placeholder - update after service is running
+              value: "http://localhost:80" # Matches the Service port
             # Optional: If you need to override the H2 password default in prod properties
             # - name: H2_DB_PASSWORD
             #   value: "your_h2_password"

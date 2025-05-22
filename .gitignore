@@ -35,6 +35,9 @@ build/
 ### Local Config ###
 src/main/resources/application-local.properties
 
+# Kubernetes Secrets
+/k8s/auth0-secret.yaml
+
 ### MacOS ###
 .DS_Store
 ._*
