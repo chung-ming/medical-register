@@ -3,6 +3,7 @@ package com.example.medicalregister.controller;
 import com.example.medicalregister.exception.RecordNotFoundException;
 import com.example.medicalregister.model.MedicalRecord;
 import com.example.medicalregister.service.MedicalRecordService;
+
 import jakarta.validation.Valid;
 
 import org.slf4j.Logger;
